@@ -1,0 +1,57 @@
+# The `common' part is automatically included (and possibly overriden by all
+# other flavors)
+common:
+    # Bucket for storage
+    boto_bucket: gh-docker-registry
+
+    # Amazon S3 Storage Configuration
+    s3_access_key: _env:AWS_KEY
+    s3_secret_key: _env:AWS_SECRET
+    s3_bucket: gh-docker-registry
+    s3_encrypt: False
+    s3_secure: True
+
+    # Let gunicorn set this environment variable or set a random string here
+    #secret_key:
+
+    search_backend: "_env:SEARCH_BACKEND:"
+    sqlalchemy_index_database:
+        "_env:SQLALCHEMY_INDEX_DATABASE:sqlite:////tmp/docker-registry.db"
+
+# This is the default configuration when no flavor is specified
+dev:
+    storage: local
+    storage_path: /tmp/registry
+    loglevel: debug
+
+# To specify another flavor, set the environment variable SETTINGS_FLAVOR
+# $ export SETTINGS_FLAVOR=prod
+prod:
+    storage: s3
+    storage_path: "_env:STORAGE_PATH:/prod"
+    # Enabling LRU cache for small files. This speeds up read/write on small files
+    # when using a remote storage backend (like S3).
+    # cache:
+    #     host: _env:CACHE_REDIS_HOST
+    #     port: _env:CACHE_REDIS_PORT
+    #     password: _env:CACHE_REDIS_PASSWORD
+    # cache_lru:
+    #     host: _env:CACHE_LRU_REDIS_HOST
+    #     port: _env:CACHE_LRU_REDIS_PORT
+    #     password: _env:CACHE_LRU_REDIS_PASSWORD
+    # # Enabling these options makes the Registry send an email on each code Exception
+    # email_exceptions:
+    #     smtp_host: REPLACEME
+    #     smtp_port: 25
+    #     smtp_login: REPLACEME
+    #     smtp_password: REPLACEME
+    #     smtp_secure: false
+    #     from_addr: docker-registry@localdomain.local
+    #     to_addr: noise+dockerregistry@localdomain.local
+    # # Enable bugsnag (set the API key)
+    # bugsnag: REPLACEME
+
+# This flavor is automatically used by unit tests
+test:
+    storage: local
+    storage_path: /tmp/test
