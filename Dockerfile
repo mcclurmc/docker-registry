@@ -5,23 +5,27 @@
 # TO_BUILD:       docker build -rm -t registry .
 # TO_RUN:         docker run -p 5000:5000 registry
 
-FROM ubuntu:13.10
+FROM trusty-ruby-base:latest
 
-RUN apt-get update; \
-    apt-get install -y git-core build-essential python-dev \
-    libevent1-dev python-openssl liblzma-dev wget; \
-    rm /var/lib/apt/lists/*_*
-RUN cd /tmp; wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
-RUN cd /tmp; python ez_setup.py; easy_install pip; \
-    rm ez_setup.py
-
-ADD . /docker-registry
-ADD ./config/boto.cfg /etc/boto.cfg
-
-RUN pip install /docker-registry/
-
-ENV DOCKER_REGISTRY_CONFIG /docker-registry/config/config_sample.yml
+EXPOSE 80
+EXPOSE 443
 
 EXPOSE 5000
 
-CMD cd /docker-registry && ./setup-configs.sh && exec docker-registry
+RUN apt-get update; \
+    apt-get upgrade -y; \
+    apt-get install -y build-essential python-dev libevent-dev \
+                       python-pip libssl-dev liblzma-dev libffi-dev \
+                       nginx-full
+
+ADD . /docker-registry
+WORKDIR /docker-registry
+RUN pip install .
+
+ADD ./config/boto.cfg		 /etc/boto.cfg
+ADD ./contrib/nginx_1-3-9.conf	 /etc/nginx/conf.d/docker-registry.conf
+ADD ./config/supervisord.conf	 /etc/supervisor/conf.d/registry.conf
+
+ENV PORT_WWW 5000
+
+CMD ["/usr/local/bin/supervisord", "-n", "-c", "/etc/supervisord.conf"]

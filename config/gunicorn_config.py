@@ -29,4 +29,4 @@ if flavor == 'prod' or flavor == 'staging':
     workers = 8
     debug = False
     log_level = 'info'
-    accesslog = '/var/log/supervisor/access.log'
+    #accesslog = '/var/log/supervisor/access.log'
