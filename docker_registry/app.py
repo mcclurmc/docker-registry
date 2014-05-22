@@ -1,6 +1,7 @@
 import logging
 import logging.handlers
 import os
+import uuid
 
 try:
     import bugsnag
@@ -48,8 +49,9 @@ def after_request(response):
 def init():
     # Configure the secret key
     if not cfg.secret_key:
-        raise ConfigError('`secret_key\' is not set')
-    app.secret_key = cfg.secret_key
+        app.secret_key = str(uuid.uuid1())
+    else:
+        app.secret_key = cfg.secret_key
     # Configure the email exceptions
     info = cfg.email_exceptions
     if info:
