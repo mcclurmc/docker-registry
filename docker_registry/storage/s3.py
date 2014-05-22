@@ -37,10 +37,14 @@ class S3Storage(BotoStorage):
                 **kwargs)
         logger.warn("No S3 region specified, using boto default region, " +
                     "this may affect performance and stability.")
-        return boto.s3.connection.S3Connection(
-            self._config.s3_access_key,
-            self._config.s3_secret_key,
-            **kwargs)
+        if (self._config.s3_access_key == '!ENV_NOT_FOUND' or self._config.s3_secret_key == '!ENV_NOT_FOUND'):
+            logger.warn("No S3 credentials supplied, attempting to use policy-based access instead.")
+            return boto.connect_s3(**kwargs)
+        else:
+            return boto.s3.connection.S3Connection(
+                self._config.s3_access_key,
+                self._config.s3_secret_key,
+                **kwargs)
 
     def makeKey(self, path):
         return boto.s3.key.Key(self._boto_bucket, path)
